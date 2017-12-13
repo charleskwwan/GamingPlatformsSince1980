@@ -44,7 +44,7 @@ void draw() {
   background(255);
   mouseOver();
   if (layout != null) layout.draw();
-  if (tooltips != null) tooltips.draw();
+  if (tooltips != null) tooltips.draw();  
 }
 
 /* mouse interactions*/
