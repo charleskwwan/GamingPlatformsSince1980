@@ -1,7 +1,7 @@
 public static class Physics {
-  private static final float HOOKES = 0.000005;
-  private static final float COULOMBS = 70;
-  private static final float DAMP = 0.001;
+  private static final float HOOKES = 0.0001;
+  private static final float COULOMBS = 2000;
+  private static final float DAMP = 0.1;
   
   public static PVector hookes(PVector pos1, PVector pos2, float relaxed) {
     PVector spring = PVector.sub(pos2, pos1);

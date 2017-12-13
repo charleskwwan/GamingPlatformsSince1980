@@ -1,23 +1,102 @@
-public Frame[] makeFrames(Table raw) {
+public Frame[] makeFrames() {
   return new Frame[]{
-    new Intro(raw), 
-    new Frame0(raw), 
-    new Frame1(raw),
-    new Frame2(raw),
-    new Frame3(raw),
-    new Frame4(raw),
-    new Frame5(raw),
-    new Frame6(raw),
-    new Frame7(raw),
-    new Frame8(raw),
-    new Frame9(raw),
-    new Frame10(raw)
+    new Intro(), 
+    new BubbleUpdateFrame(
+      "1980: Atari is king",
+      "In the early 1980s, the Atari 2600 was by far the most popular game console. " +
+      "Still, the market was small as gaming was in its infancy.",
+      1980
+    ), 
+    new BubbleUpdateFrame(
+      "1983: Nintendo usurps Atari",
+      "In 1983, the video game market crashed and with it, Atari. " +
+      "Nintendo steps in with the NES and dominates the market.",
+      1983
+    ),
+    new BubbleUpdateFrame(
+      "1995: Sony usurps Nintendo",
+      "After Nintendo pulls out of a hardware deal with Sony, " +
+      "Sony breaks into the console market with the PlayStation, " +
+      "sporting then-revolutionary 3D graphics. It quickly overtakes the NES, " +
+      "and, after 9 years, becomes the first console to ship 100 " +
+      "million units.",
+      1995
+    ),
+    new BubbleUpdateFrame(
+      "2001: Microsoft joins the fray",
+      "Threatened by Playstation's future in \"living-room computing\", " +
+      "Microsoft releases the Xbox. Though they don't quite dethrone " +
+      "Sony, Nintendo's market share wanes further, and Microsoft " +
+      "gains a foothold.",
+      2001
+    ),
+    new BubbleUpdateFrame(
+      "2004: The peak of the Playstation 2",
+      "Released in 2000, the PlayStation 2 is the most popular console " +
+      "of all time, supported by a library of popular and exclusive game " +
+      "franchises, such as 'Grand Theft Auto', 'Meta Gear Solid', and " +
+      "'Dragon Quest'.",
+      2004
+    ),
+    new BubbleUpdateFrame(
+      "2005: The return of handhelds",
+      "Nintendo releases the DS. Sporting a touch interface, it introduces a " +
+      "series of non-traditional games, such as 'Brain Training' and 'Nintendogs', " +
+      "that attract a wider and more varied audience than before.",
+      2005
+    ),
+    new BubbleUpdateFrame(
+      "2006: Nintendo surges forward",
+      "Encouraged by the success of the DS, Nintendo next releases " +
+      "the Wii. A breakthrough in motion sensing technology, the Wii remote " +
+      "provided another highly accessible interface for non-traditional " +
+      "gamers, supported by classics like 'Wii Sports' and 'Wii Play'.",
+      2006
+    ),
+    new BubbleUpdateFrame(
+      "2007: Console power struggles",
+      "In this era, every major console, as with the Wii, had their own " +
+      "major breakthroughs. The Xbox 360, released in late-2005, boasted full HD " +
+      "graphics, while the PlayStation 3, released in late-2006, incorporated " +
+      "Blu-ray technology. Coupled with many blockbuster releases, 2007 was " +
+      "was one of the most competitive years for consoles.",
+      2007
+    ),
+    new BubbleUpdateFrame(
+      "2009: From strength to strength",
+      "2 years later, the console market continued to show strong performances " +
+      "by all major players.",
+      2009
+    ),
+    new BubbleUpdateFrame(
+      "2010: A declining market",
+      "Despite historic highs in 2008-9, the console market starts to decline " +
+      "in 2010...",
+      2010
+    ),
+    new BubbleUpdateFrame(
+      "",
+      "...all the way to 2012, when the market shrinks to nearly the same size " +
+      "it was in 2001.",
+      2012
+    ),
+    new BubbleUpdateFrame(
+      "2013: A new hope?",
+      "The simultaneous release of the Xbox One and PlayStation 4 revitalizes " +
+      "the market...",
+      2013
+    ),
+    new BubbleUpdateFrame(
+      "",
+      "...but only temporarily. By 2016, the console market is only 61% of what " +
+      "it was 3 years ago.",
+      2016
+    )
   };
 }
 
 class Intro extends Frame {
-  public Intro(Table raw) {
-    super(raw);
+  public Intro() {
     this.title = "The Evolution of Gaming Consoles Since 1980";
     this.text = "Gaming has come a long way, evolving from a niche hobby enjoyed by a " +
       "select few, to a multimillion dollar industry with widespread acceptance. " +
@@ -34,147 +113,31 @@ class Intro extends Frame {
   }
 }
 
-class Frame0 extends Frame {
-  public Frame0(Table raw) {
-    super(raw);
-    this.title = "1980-2: Atari is King";
-    this.text = "In 1980-2, the Atari 2600 was by far the most popular game console. " +
-      "Still, the market was small as gaming was in its infancy.";
+class BubbleUpdateFrame extends Frame {
+  private int year;
+  
+  public BubbleUpdateFrame(String title, String text, int year) {
+    this.title = title;
+    this.text = text;
+    this.year = year;
   }
-
+  
   public Chart transition(Chart chart) {
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(2008), "platform", platformStrs, "sales", platforms);
-    return bchart;
+    Table tbl = platformsForYears.get(this.year);
+    if (chart.getClass() == BubbleChart.class) {
+      ((BubbleChart)chart).updateNodes(tbl);
+      return chart;
+    } else {
+      return new BubbleChart(tbl, "platform", platformStrs, "sales", platforms); 
+    }
   }
 }
 
-class Frame1 extends Frame {
-  public Frame1(Table raw) {
-    super(raw);
-    this.title = "1983: Nintendo Usurps Atari";
-    this.text = "In 1983, the video game market crashed and with it, Atari. " +
-      "Nintendo steps in with the NES and dominates the market.";
-  }
-
-  public Chart transition(Chart chart) {
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(1983), "platform", platformStrs, "sales", platforms);
-    return bchart;
-  }
-}
-
-class Frame2 extends Frame {
-  public Frame2(Table raw) {
-    super(raw);
-    this.title = "1995: Playstation dominates the market with superior hardware";
-    this.text =  "After 9 and half years after launch in 1995, the PlayStation, developed by Sony Computer Entertainment, became the first video game console to ship 100 million units.";
-  }
-
-  public Chart transition(Chart chart) {
-    //5 years after PS1 was released, giving more data to show about its dominance in the market
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(1995), "platform", platformStrs, "sales", platforms);
-    return bchart;
-  }
-}
-
-class Frame3 extends Frame {
-  public Frame3(Table raw) {
-    super(raw);
-    this.title = "2000: Microsoft's Xbox was introduced";
-    this.text = "The Xbox was released in 2000, but the PlayStation's dominance expands";
-  }
-
-  public Chart transition(Chart chart) {
-    //4 years after PS2 was released, giving more data to show about its dominance in the market
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(2000), "platform", platformStrs, "sales", platforms);
-    return bchart;
-  }
-}
-
-class Frame4 extends Frame {
-  public Frame4(Table raw) {
-    super(raw);
-    this.title = "2004: Playstation 2 continues dominance";
-    this.text = "The PlayStation 2, released in 2000, was just as dominant as it only took 6 years to ship 100 million units";
-  }
-
-  public Chart transition(Chart chart) {
-    //4 years after PS2 was released, giving more data to show about its dominance in the market
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(2004), "platform", platformStrs, "sales", platforms);
-    return bchart;
-  }
-}
-
-class Frame5 extends Frame {
-  public Frame5(Table raw) {
-    super(raw);
-    this.title = "2005: The return of handhelds";
-    this.text = "The release of the Nintendo DS, with its touch-screen technology, marked the return of handheld gaming";
-  }
-
-  public Chart transition(Chart chart) {
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(2005), "platform", platformStrs, "sales", platforms);
-    return bchart;
-  }
-}
-
-class Frame6 extends Frame {
-  public Frame6(Table raw) {
-    super(raw);
-    this.title = "2006: Nintendo surges";
-    this.text = "The release of the Nintendo Wii in 2006 popularized Nintendo with its Wii remote that allowed" +
-                "players to control using gestures and button presses using its accelerometer and infrared technology";
-  }
-
-  public Chart transition(Chart chart) {
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(2006), "platform", platformStrs, "sales", platforms);
-    return bchart;
-  }
-}
-
-class Frame7 extends Frame {
-  public Frame7(Table raw) {
-    super(raw);
-    this.title = "2007: Home console power struggle";
-    this.text = "The home console market shows a power struggle between the Nintendo Wii, the Microsoft Xbox360 (with Full HD games), and the Sony PlayStation 3 (with BlueRay drive).";
-  }
-
-  public Chart transition(Chart chart) {
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(2007), "platform", platformStrs, "sales", platforms);
-    return bchart;
-  }
-}
-
-class Frame8 extends Frame {
-  public Frame8(Table raw) {
-    super(raw);
-    this.title = "2009: Video game market continues to show strong performance";
-    this.text = "The market continues to grow with constructive competition between the major players of the market";
-  }
-
-  public Chart transition(Chart chart) {
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(2009), "platform", platformStrs, "sales", platforms);
-    return bchart;
-  }
-}
-
-class Frame9 extends Frame {
-  public Frame9(Table raw) {
-    super(raw);
-    this.title = "2010-11: Begin of the decline in the video game market";
-    this.text = "2010 marks the year where the general video game market showed a decline after historical performances in 08-09";
-  }
-
-  public Chart transition(Chart chart) {
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(2011), "platform", platformStrs, "sales", platforms);
-    return bchart;
-  }
-}
-
-class Frame10 extends Frame {
-  public Frame10(Table raw) {
-    super(raw);
-    this.title = "2013: Release of Xbox One and PlayStation 4";
-    this.text = "The new iterations of the two major home consoles led to a brief increase in video game sales but the market still trended downwards";
+class Frame11 extends Frame {
+  public Frame11() {
+    this.title = "2013: A new hope?";
+    this.text = "The simultaneous release of the Xbox One and PlayStation 4 revitalizes " +
+                "the market...";
   }
 
   public Chart transition(Chart chart) {

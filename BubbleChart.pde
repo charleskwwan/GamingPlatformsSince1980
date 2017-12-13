@@ -1,6 +1,7 @@
 public class BubbleChart extends Chart {
   private HashMap<String, Integer> colorMap;
   private HashMap<String, ArrayList<Node>> nodes;
+  private ArrayList<Node> dyingNodes; // nodes transitioning out
   
   public BubbleChart(
     Table tbl, 
@@ -9,12 +10,18 @@ public class BubbleChart extends Chart {
   ) {
     super(tbl, xname, xlabels, yname, new String[]{});
     this.colorMap = colorMap;
-    makeNodes(); // initializes nodes
+    this.dyingNodes = new ArrayList<Node>();
+    
+    // node initialization
+    this.nodes = new HashMap<String, ArrayList<Node>>();
+    for (String lbl : this.xlabels)
+      this.nodes.put(lbl, new ArrayList<Node>());
+    updateNodes(this.tbl); // initializes nodes
   }
   
   private class Node extends DataPoint {
     private PVector pos, v0;
-    private float r, mass;
+    private float r, transr;
     private ArrayList<PVector> q;
     private float drawx, drawy, drawr;
 
@@ -22,9 +29,23 @@ public class BubbleChart extends Chart {
       super(row);
       this.pos = new PVector(x, y);
       this.v0 = new PVector(0, 0);
+      this.transr = 0;
       this.r = r;
-      this.mass = r;
       this.q = new ArrayList<PVector>();
+    }
+    
+    /* general */
+    public float getRadius() {
+      return this.transr;
+    }
+    
+    public float getMass() {
+      return pow(this.r, 2);
+    }
+    
+    public void update(float r, TableRow row) {
+      if (row != null) set(row);
+      this.r = r;
     }
     
     /* physics */
@@ -36,8 +57,7 @@ public class BubbleChart extends Chart {
     
     public PVector springForce(Node other, float len) {
       float dist = pow(this.pos.x - other.pos.x, 2) + pow(this.pos.y - other.pos.y, 2);
-      float otherr = other.getRadius();
-      if (pow(this.r - otherr, 2) < dist && dist < pow(this.r + otherr, 2)) {
+      if (pow(this.r - other.r, 2) < dist && dist < pow(this.r + other.r, 2)) {
         return new PVector(0, 0);
       }
       return Physics.hookes(this.pos, other.pos, len);
@@ -63,7 +83,7 @@ public class BubbleChart extends Chart {
     public void accumulate() {
       PVector total = new PVector(0, 0);
       while (!q.isEmpty()) total.add(q.remove(q.size()-1));
-      PVector a = Physics.acceleration(total, this.mass);
+      PVector a = Physics.acceleration(total, getMass());
       PVector v1 = Physics.velocity(this.v0, a, 1);
       PVector s = Physics.displacement(this.v0, a, 1);
       this.v0 = v1;
@@ -71,21 +91,18 @@ public class BubbleChart extends Chart {
       enclose();
     }
     
-    /* general */
-    public float getRadius() {
-      return this.r;
-    }
-    
     /* drawing */
     public void draw(float x, float y, float w, float h) {
       this.drawx = x + this.pos.x * (w / getW());
       this.drawy = y + this.pos.y * (h / getH());
-      this.drawr = this.r * (w < h ? w / getW() : h / getH());
+      this.drawr = this.transr * (w < h ? w / getW() : h / getH());
       stroke(isOver() ? 150 : 0);
       strokeWeight(isOver() ? 4 : 1);
       fill(BubbleChart.this.colorMap.get(this.data.get(BubbleChart.this.xname)));
       ellipse(this.drawx, this.drawy, this.drawr*2, this.drawr*2);
       strokeWeight(1);
+      // shift transr closer to r
+      this.transr += (this.r - this.transr) * .1;
     }
     
     public void drawTooltip() {
@@ -133,32 +150,63 @@ public class BubbleChart extends Chart {
     return sqrt(yval) * min(getW(), getH()) / 60;
   }
   
-  private void makeNodes() {
-    this.nodes = new HashMap<String, ArrayList<Node>>();
-    float cx = getCenterX(), cy = getCenterY();
-    
-    // gather all nonempties to allow better initial node positioning
-    ArrayList<Pair<String, Iterable<TableRow>>> nonEmptyRows = new ArrayList<Pair<String, Iterable<TableRow>>>();
+  // helper for node making: pick out xlabels that have at least one row
+  private HashMap<String, Iterable<TableRow>> getNonEmptyRows(Table tbl) {
+    HashMap<String, Iterable<TableRow>> map = new HashMap<String, Iterable<TableRow>>();
     for (String lbl : this.xlabels) {
-      Iterable<TableRow> rows = this.tbl.findRows(lbl, this.xname);
-      if (rows.iterator().hasNext()) nonEmptyRows.add(new Pair(lbl, rows));
+      Iterable<TableRow> rows = tbl.findRows(lbl, this.xname);
+      if (rows.iterator().hasNext()) map.put(lbl, rows);
     }
+    return map;
+  }
+  
+  private Node newNode(float a1, float a2, float r, TableRow row) {
+    float angle = random(a1, a2);
+    float dist = random(getW()/10, 2*getW()/5);
+    return new Node(
+      getCenterX() + cos(angle) * dist - getX(),
+      getCenterY() + sin(angle) * dist - getY(),
+      r,
+      row
+    );
+  }
+  
+  private void killNode(Node node) {
+    node.update(0, null);
+    this.dyingNodes.add(node);
+  }
+  
+  public void updateNodes(Table tbl) {
+    HashMap<String, Iterable<TableRow>> nonEmptyRows = getNonEmptyRows(tbl);
     
-    // initialize 1 arrayist per xlabel
-    for (int i = 0; i < nonEmptyRows.size(); i++) {
-      String lbl = nonEmptyRows.get(i).fst;
-      Iterable<TableRow> rows = nonEmptyRows.get(i).snd;
-      float a1 = i * TWO_PI / nonEmptyRows.size(), a2 = (i+1) * TWO_PI / nonEmptyRows.size();
-      ArrayList<Node> lblNodes = new ArrayList<Node>();
+    for (int i = 0; i < this.xlabels.length; i++) {
+      String lbl = this.xlabels[i];
+      // remove nodes for nonexisting labels with no rows
+      if (!nonEmptyRows.containsKey(lbl)) {
+        for (Node node : this.nodes.get(lbl))
+          killNode(node);
+        this.nodes.get(lbl).clear();
+        continue;
+      }
       
+      Iterable<TableRow> rows = nonEmptyRows.get(lbl);
+      float a1 = i * TWO_PI / this.xlabels.length, a2 = (i+1) * TWO_PI / this.xlabels.length;
+      ArrayList<Node> lblNodes = this.nodes.get(lbl);
+      
+      int j = 0;
       for (TableRow row : rows) {
         float yval = row.getFloat(this.yname);
-        if (yval < 0.5) continue; // ignore too small
-        float angle = random(a1, a2);
-        float r = random(getW()/10, 2*getW()/5);
-        lblNodes.add(new Node(cx+cos(angle)*r-getX(), cy+sin(angle)*r-getY(), toRadius(yval), row));
+        if (yval < 0.5) { // ignore values that are too small
+          continue;
+        } else if (j < lblNodes.size()) { // update existing node
+          lblNodes.get(j).update(toRadius(yval), row);
+        } else { // add new node
+          lblNodes.add(newNode(a1, a2, toRadius(yval), row));
+        }
+        j++;
       }
-      this.nodes.put(lbl, lblNodes);
+      for ( ; j < lblNodes.size(); j++) // remove excess nodes
+        killNode(lblNodes.remove(lblNodes.size()-1));
     }
   }
   
@@ -169,7 +217,7 @@ public class BubbleChart extends Chart {
         for (Node n1 : this.nodes.get(lbl1)) {
           for (Node n2 : this.nodes.get(lbl2)) {
             if (n1 == n2) continue;
-            float springLen = getW() / (lbl1 == lbl2 ? 8 : 3);
+            float springLen = getW() / (lbl1 == lbl2 ? 100 : 7);
             springLen += 2 * sqrt(n1.getRadius() + n2.getRadius());
             n1.stage(n1.particleForce(n2));
             n1.stage(n1.springForce(n2, springLen));
@@ -193,6 +241,16 @@ public class BubbleChart extends Chart {
     for (String lbl : this.nodes.keySet())
       for (Node node : this.nodes.get(lbl))
         node.draw(x, y, w, h);
+        
+    // draw dying nodes if they are still big enough, otherwise remove them
+    for (int i = this.dyingNodes.size()-1; i >= 0; i--) {
+      Node node = this.dyingNodes.get(i);
+      if (node.getRadius() < 1) {
+        this.dyingNodes.remove(node);
+      } else {
+        node.draw(x, y, w, h);
+      }
+    }
   }
   
   /* mouse interactions */

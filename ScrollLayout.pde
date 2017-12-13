@@ -1,12 +1,5 @@
 public abstract class Frame {
-  public String title, text;
-  public Table tbl;
-  
-  public Frame(Table tbl) {
-    this.title = this.text = null;
-    this.tbl = tbl;
-  }
-  
+  public String title = "", text = "";
   public abstract Chart transition(Chart chart);
 }
 

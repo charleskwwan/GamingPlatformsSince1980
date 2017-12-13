@@ -1,6 +1,6 @@
 final int displayWidth = 1200, displayHeight = 800;
 final int HPADDING = 100;
-final int SCROLL_SPEED = 10;
+final int SCROLL_SPEED = 20;
 final String MAIN_FONT = "Arial";
 final int FONT_SIZE = 12;
 final int TEXT_GAP = 5;
@@ -21,11 +21,6 @@ ScrollLayout layout = null;
 // misc
 Tooltips tooltips = null;
 
-//Table platformsByYears; // temp
-//StackedBarChart sbchart = null; // temp
-//RoseChart rchart = null; // temp
-//BubbleChart bchart = null;
-
 void setup() {
   size(displayWidth, displayHeight);
   
@@ -34,7 +29,7 @@ void setup() {
   platformsForYears = new HashMap<Integer, Table>();
   for (int year : years) platformsForYears.put(year, platformsForYear(raw, year));
   
-  Frame[] frames = makeFrames(raw);
+  Frame[] frames = makeFrames();
   layout = new ScrollLayout(HPADDING, 0, displayWidth - 2 * HPADDING, displayHeight, frames);
   
   tooltips = new Tooltips();
@@ -156,6 +151,7 @@ HashMap<String, String> groupPlatforms() {
   map.put("GC", "Nintendo");
   map.put("NES", "Nintendo");
   map.put("SNES", "Nintendo");
+  map.put("N64", "Nintendo");
   // playstation
   map.put("PS", "PlayStation");
   map.put("PS2", "PlayStation");
@@ -169,6 +165,7 @@ HashMap<String, String> groupPlatforms() {
   map.put("GEN", "Sega");
   map.put("SAT", "Sega");
   map.put("DC", "Sega");
+  map.put("SCD", "Sega");
   // atari
   map.put("2600", "Atari");
   map.put("7800", "Atari");
