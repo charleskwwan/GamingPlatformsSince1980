@@ -12,29 +12,81 @@ public class StackedBarChart extends Chart {
     super(tbl, xname, xlabels, yname, ylabels);
     this.ymax = yMax();
     this.colorMap = colorMap;
-    this.bars = makeBars();    
+    this.bars = makeBars();
   }
   
   private class Bar extends DataPoint {
+    float drawx, drawy, draww;
+    float[] drawhs;
+    
     public Bar(TableRow row) {
       super(row);
+      this.drawhs = new float[StackedBarChart.this.ylabels.length];
     }
     
     /* draw */
+    // private helper for draw
+    private void drawRect(int i, float y, int strk, int strkWgt) {
+      stroke(strk);
+      strokeWeight(strkWgt);
+      fill(StackedBarChart.this.colorMap.get(StackedBarChart.this.ylabels[i]));
+      rect(this.drawx, y, this.draww, this.drawhs[i]);
+    }
+    
     public void draw(float x, float y, float chartw, float charth) {
-      float w = .75 * chartw / StackedBarChart.this.xlabels.length;
+      this.draww = .75 * chartw / StackedBarChart.this.xlabels.length;
+      this.drawx = x - this.draww / 2;
+      this.drawy = y;
       int ylabelsLen = StackedBarChart.this.ylabels.length;
-      for (int j = 0; j < ylabelsLen; j++) {
-        String ylabel = StackedBarChart.this.ylabels[j];
-        float yval = this.row.getFloat(ylabel);
+      
+      // set drawhs
+      for (int i = 0; i < ylabelsLen; i++) {
+        String ylabel = StackedBarChart.this.ylabels[i];
+        float yval = Float.valueOf(this.data.get(ylabel));
         float h = charth * yval / StackedBarChart.this.ymax;
+        this.drawhs[i] = h;
         y -= h;
-        fill(StackedBarChart.this.colorMap.get(ylabel));
-        rect(x - w/2, y, w, h);
       }
+      // draw rects
+      float whichy = -1;
+      int which = whichOver();
+      for (int i = ylabelsLen-1; i >= 0; i--) {
+        if (i == which) {
+          whichy = y;
+        } else {
+          drawRect(i, y, 0, 1);
+        }
+        y += this.drawhs[i];
+      }
+      if (which >= 0) drawRect(which, whichy, 150, 4);
+      strokeWeight(1);
     }
     
     public void drawTooltip() {
+      int which = whichOver();
+      if (which < 0) return;
+      String yValStr = nf(Float.valueOf(this.data.get(StackedBarChart.this.ylabels[which])), 1, 2);
+      String[] lines = new String[]{
+        StackedBarChart.this.xname + ": " + this.data.get(StackedBarChart.this.xname), // x string
+        "platform: " + StackedBarChart.this.ylabels[which], // hacky
+        StackedBarChart.this.yname + ": " + yValStr // y string
+      };
+      drawDefault(lines);
+    }
+    
+    private int whichOver() {
+      float y = this.drawy;
+      for (int i = 0; i < this.drawhs.length; i++) {
+        if (mouseX > this.drawx && mouseX < this.drawx + this.draww &&
+            mouseY > y - this.drawhs[i] && mouseY < y)
+          return i;
+        y -= this.drawhs[i];
+      }
+      return -1;
+    }
+    
+    public boolean isOver() {
+      return whichOver() >= 0;
     }
   }
   
@@ -133,6 +185,14 @@ public class StackedBarChart extends Chart {
   }
   
   /* mouse interactions */
+  private Bar onWhich() {
+    for (Bar bar : this.bars)
+      if (bar.isOver()) return bar;
+    return null;
+  }
+  
   public void onOver() {
+    Bar over = onWhich();
+    if (over != null) tooltips.add(over);
   }
 }

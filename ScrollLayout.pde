@@ -32,7 +32,7 @@ public class ScrollLayout extends ViewPort {
       this.frames.add(new Pair(frame, yoffset));
       yoffset += frameHeight(i, frame.title, frame.text);
     }
-    this.totalHeight = yoffset + getH(); // add getH to allow scrolling
+    this.totalHeight = yoffset + getH()/2; // add getH to allow scrolling
   }
   
   /* frame methods */

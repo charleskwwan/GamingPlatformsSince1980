@@ -81,32 +81,20 @@ public class BubbleChart extends Chart {
       this.drawx = x + this.pos.x * (w / getW());
       this.drawy = y + this.pos.y * (h / getH());
       this.drawr = this.r * (w < h ? w / getW() : h / getH());
-      if (this.row == null) return; // no fill possible
-      stroke(0);
+      stroke(isOver() ? 150 : 0);
       strokeWeight(isOver() ? 4 : 1);
-      fill(BubbleChart.this.colorMap.get(this.row.getString(BubbleChart.this.xname)));
+      fill(BubbleChart.this.colorMap.get(this.data.get(BubbleChart.this.xname)));
       ellipse(this.drawx, this.drawy, this.drawr*2, this.drawr*2);
       strokeWeight(1);
     }
     
     public void drawTooltip() {
-      String nameStr = "name: " + this.row.getString("name");
-      String xStr = BubbleChart.this.xname + ": " + this.row.getString(BubbleChart.this.xname);
-      String yStr = BubbleChart.this.yname + ": " + this.row.getString(BubbleChart.this.yname);
-      float longest = max(textWidth(nameStr), textWidth(xStr), textWidth(yStr));
-      
-      textFont(createFont(MAIN_FONT, FONT_SIZE));
-      textAlign(LEFT, TOP);
-      // rect
-      stroke(0);
-      fill(255);
-      float h = 3 * (textAscent() + textDescent()) + 2 * TEXT_GAP;
-      rect(mouseX, mouseY - h - TEXT_GAP, longest + 2 * TEXT_GAP, h);
-      // text
-      fill(0);
-      text(nameStr, mouseX + TEXT_GAP, mouseY - h);
-      text(xStr, mouseX + TEXT_GAP, mouseY - h + textAscent() + textDescent());
-      text(yStr, mouseX + TEXT_GAP, mouseY - h + 2 * (textAscent() + textDescent()));
+      String[] lines = new String[]{
+        "name: " + this.data.get("name"), // name string
+        BubbleChart.this.xname + ": " + this.data.get(BubbleChart.this.xname), // x string
+        BubbleChart.this.yname + ": " + this.data.get(BubbleChart.this.yname) // y string
+      };
+      drawDefault(lines);
     }
     
     /* mouse interactions */

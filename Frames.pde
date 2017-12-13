@@ -34,7 +34,7 @@ class Frame0 extends Frame {
   }
   
   public Chart transition(Chart chart) {
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(1996), "platform", platformStrs, "sales", platforms);
+    BubbleChart bchart = new BubbleChart(platformsForYears.get(2008), "platform", platformStrs, "sales", platforms);
     return bchart;
   }
 }
