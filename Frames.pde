@@ -4,7 +4,8 @@ public Frame[] makeFrames(Table raw) {
     new Frame0(raw), 
     new Frame1(raw),
     new Frame2(raw),
-    new Frame3(raw)
+    new Frame3(raw),
+    new Frame4(raw)
   };
 }
 
@@ -58,13 +59,13 @@ class Frame1 extends Frame {
 class Frame2 extends Frame {
   public Frame2(Table raw) {
     super(raw);
-    this.title = "1995-2004: Playstation dominates the market with superior hardware";
+    this.title = "1995: Playstation dominates the market with superior hardware";
     this.text =  "After 9 and half years after launch in 1995, the PlayStation, developed by Sony Computer Entertainment, became the first video game console to ship 100 million units.";
   }
 
   public Chart transition(Chart chart) {
     //5 years after PS1 was released, giving more data to show about its dominance in the market
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(2000), "platform", platformStrs, "sales", platforms);
+    BubbleChart bchart = new BubbleChart(platformsForYears.get(1995), "platform", platformStrs, "sales", platforms);
     return bchart;
   }
 }
@@ -72,8 +73,22 @@ class Frame2 extends Frame {
 class Frame3 extends Frame {
   public Frame3(Table raw) {
     super(raw);
-    this.title = "1995-2004: Playstation dominates the market with superior hardware";
-    this.text = "The PlayStation 2, released in 2000, was just as dominant as it only took 6 years to reach the same feat";
+    this.title = "2000: Microsoft's Xbox was introduced";
+    this.text = "The Xbox was released in 2000, but the PlayStation's dominance expands";
+  }
+
+  public Chart transition(Chart chart) {
+    //4 years after PS2 was released, giving more data to show about its dominance in the market
+    BubbleChart bchart = new BubbleChart(platformsForYears.get(2000), "platform", platformStrs, "sales", platforms);
+    return bchart;
+  }
+}
+
+class Frame4 extends Frame {
+  public Frame4(Table raw) {
+    super(raw);
+    this.title = "2004: Playstation 2 continues dominance";
+    this.text = "The PlayStation 2, released in 2000, was just as dominant as it only took 6 years to ship 100 million units";
   }
 
   public Chart transition(Chart chart) {
