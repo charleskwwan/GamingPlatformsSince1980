@@ -118,53 +118,15 @@ public Frame[] makeFrames() {
   };
 }
 
-class Intro extends Frame {
-  public Intro() {
-    this.title = "The Evolution of Gaming Consoles Since 1980";
-    this.text = "Gaming has come a long way, evolving from a niche hobby enjoyed by a " +
-      "select few, to a multimillion dollar industry with widespread acceptance. " +
-      "That journey has correspondingly seen the concurrent evolution of the " +
-      "game console. How have they changed? Where are they going? Scroll down " +
-      "to find out!";
-  }
-
-  public Chart transition(Chart chart) {
-    String[] yearStrs = new String[platformYears.size()];
-    for (int i = 0; i < platformYears.size(); i++) yearStrs[i] = String.valueOf(platformYears.get(i));
-    StackedBarChart sbchart = new StackedBarChart(
-      platformsByYears,
-      "year", yearStrs,
-      "physical_sales", platformStrs,
-      platforms
-    );
-    return sbchart;
-  }
+public abstract class PlatformFrame extends Frame {
+  public abstract Chart transition(Chart chart);
   
   public void drawLegend(float x, float y, float w, float h) {
-  }
-}
-
-class BubbleUpdateFrame extends Frame {
-  private int year;
-  
-  public BubbleUpdateFrame(String title, String text, int year) {
-    this.title = title;
-    this.text = text;
-    this.year = year;
-  }
-  
-  public Chart transition(Chart chart) {
-    Table tbl = platformsForYears.get(this.year);
-    if (chart.getClass() == BubbleChart.class) {
-      ((BubbleChart)chart).unfixNodes();
-      ((BubbleChart)chart).updateNodes(tbl);
-      return chart;
-    } else {
-      return new BubbleChart(tbl, "id", "platform", platformStrs, "sales", platforms); 
-    }
-  }
-  
-  public void drawLegend(float x, float y, float w, float h) {
+    // bg
+    noStroke();
+    fill(255);
+    rect(x, y, w, h);
+    
     float r = 10; // hacky hard code
     stroke(0);
     
@@ -191,7 +153,8 @@ class BubbleUpdateFrame extends Frame {
     }
     
     // seperating
-    line(x, y + h, x + w, y + h); // horizontal
+    line(x, y, x + w, y); // horizontal top
+    line(x, y + h, x + w, y + h); // horizontal bottom
     line(sectX, y, sectX, y + h); // vertical
     
     // other info
@@ -205,6 +168,50 @@ class BubbleUpdateFrame extends Frame {
       sectX + 20 + TEXT_GAP + r*2, y + 20,
       w - textX + x, h
     );
+  }
+}
+
+class Intro extends PlatformFrame {
+  public Intro() {
+    this.title = "The Evolution of Gaming Consoles Since 1980";
+    this.text = "Gaming has come a long way, evolving from a niche hobby enjoyed by a " +
+      "select few, to a multimillion dollar industry with widespread acceptance. " +
+      "That journey has correspondingly seen the concurrent evolution of the " +
+      "game console. How have they changed? Where are they going? Scroll down " +
+      "to find out!";
+  }
+
+  public Chart transition(Chart chart) {
+    String[] yearStrs = new String[platformYears.size()];
+    for (int i = 0; i < platformYears.size(); i++) yearStrs[i] = String.valueOf(platformYears.get(i));
+    StackedBarChart sbchart = new StackedBarChart(
+      platformsByYears,
+      "year", yearStrs,
+      "physical_sales", platformStrs,
+      platforms
+    );
+    return sbchart;
+  }
+}
+
+class BubbleUpdateFrame extends PlatformFrame {
+  private int year;
+  
+  public BubbleUpdateFrame(String title, String text, int year) {
+    this.title = title;
+    this.text = text;
+    this.year = year;
+  }
+  
+  public Chart transition(Chart chart) {
+    Table tbl = platformsForYears.get(this.year);
+    if (chart.getClass() == BubbleChart.class) {
+      ((BubbleChart)chart).unfixNodes();
+      ((BubbleChart)chart).updateNodes(tbl);
+      return chart;
+    } else {
+      return new BubbleChart(tbl, "id", "platform", platformStrs, "sales", platforms); 
+    }
   }
 }
 
@@ -254,7 +261,7 @@ class LineUpdateFrame extends Frame {
     return lchart;
   }
   
-  public void drawLegend(float x, float y, float w, float h) {
+  public void drawLegend(float x, float y, float w, float h) {   
     float r = 15; // hacky hard code
     stroke(0);
     

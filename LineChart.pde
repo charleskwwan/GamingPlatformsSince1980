@@ -5,6 +5,7 @@ public class LineChart extends AxisChart {
   private HashMap<String, ArrayList<Line>> lines;
   private HashMap<String, Integer> colorMap;
   private HashMap<String, Integer> hiddenSeries; // hide certain labels, integer is a dummy 
+  private TransitionValue axisOpacity;
   
   public LineChart(
     Table tbl,
@@ -71,8 +72,8 @@ public class LineChart extends AxisChart {
     public Line(float x1, float y1, float x2, float y2) {
       this.x1 = TransitionValues.add(x1, x1);
       this.y1 = TransitionValues.add(y1, y1);
-      this.x2 = TransitionValues.add(x1, x2);
-      this.y2 = TransitionValues.add(y1, y2);
+      this.x2 = TransitionValues.add(x1, x2, .01);
+      this.y2 = TransitionValues.add(y1, y2, .01);
     }
     
     public void draw(float x1, float y1, float x2, float y2) {
@@ -160,10 +161,11 @@ public class LineChart extends AxisChart {
     }
     
     // axes
-    PFont font = createFont(MAIN_FONT, FONT_SIZE);
-    textFont(font);
-    fill(0);
-    stroke(0);
+    textFont(createFont(MAIN_FONT, FONT_SIZE));
+    if (this.axisOpacity == null)
+      this.axisOpacity = TransitionValues.add(0, 255, .05);
+    stroke(0, this.axisOpacity.getCurrent());
+    fill(0, this.axisOpacity.getCurrent());
     drawAxes(x, y, w, h, chartx, charty, chartw, charth);
   }
   

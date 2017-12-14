@@ -9,6 +9,7 @@ public class ScrollLayout extends ViewPort {
   private Chart chart;
   private int active; // 0 for intro, 1->n for rest
   private float scrolly, totalHeight;
+  private Pair<Integer, TransitionValue> legendX;
   
   public ScrollLayout(
     float x, float y, float w, float h,
@@ -108,7 +109,10 @@ public class ScrollLayout extends ViewPort {
   private void drawLegend(int i) {
     float x, y, w, h;
     if (this.active == 0) {
-      x = y = w = h = 0; // dummy
+      h = getH() * .1;
+      x = getX();
+      y = getY() + getH() - h;
+      w = getW();
     } else {
       float xoffset = frameWidth(i) * 1.2;
       x = getX() + xoffset;
@@ -116,7 +120,16 @@ public class ScrollLayout extends ViewPort {
       w = getW() - xoffset;
       h = getH() * .1;
     }
-    this.frames.get(i).fst.drawLegend(x, y, w, h);
+    
+    if (this.legendX == null ||
+        (this.active == 0 && this.legendX.fst != 0) ||
+        (this.active > 0 && this.legendX.fst == 0)) {
+      this.legendX = new Pair(this.active, TransitionValues.add(width, x, .01));
+    } else {
+      this.legendX.snd.setFinal(x);
+    }
+    
+    this.frames.get(i).fst.drawLegend(this.legendX.snd.getCurrent(), y, w, h);
   }
   
   public void draw() {

@@ -1,6 +1,7 @@
 public class StackedBarChart extends AxisChart {
   private HashMap<String, Integer> colorMap;
   private ArrayList<Bar> bars;
+  private TransitionValue axisOpacity;
   
   public StackedBarChart(
     Table tbl,
@@ -135,8 +136,10 @@ public class StackedBarChart extends AxisChart {
     // axes
     PFont font = createFont(MAIN_FONT, FONT_SIZE);
     textFont(font);
-    fill(0);
-    stroke(0);
+    if (this.axisOpacity == null)
+      this.axisOpacity = TransitionValues.add(0, 255, .05);
+    stroke(0, this.axisOpacity.getCurrent());
+    fill(0, this.axisOpacity.getCurrent());
     drawAxes(x, y, w, h, chartx, charty, chartw, charth);
   }
   

@@ -39,7 +39,7 @@ public class BubbleChart extends Chart {
       // set dummy draw dimensions for now
       this.drawx = TransitionValues.add(getCenterX(), getCenterX());
       this.drawy = TransitionValues.add(getCenterY(), getCenterY());
-      this.drawr = TransitionValues.add(0, 0);
+      this.drawr = TransitionValues.add(0, 0, .01);
     }
     
     /* general */
