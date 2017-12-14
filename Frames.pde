@@ -67,7 +67,7 @@ public Frame[] makeFrames() {
     ),
     new BubbleUpdateFrame(
       "2009: From strength to strength",
-      "2 years later, the console market continued to show strong performances " +
+      "2 years later, the console market continues to show strong performances " +
       "by all major players.",
       2009
     ),
@@ -94,6 +94,26 @@ public Frame[] makeFrames() {
       "...but only temporarily. By 2016, the console market is only 61% of what " +
       "it was 3 years ago.",
       2016
+    ),
+    new LineUpdateFrame(
+      "Physical console game revenues falling",
+      "For several years now, sales have slowly declined for physical console " +
+      "games. Where is all the money going? Is gaming simply dying?",
+      new String[]{"MMO", "Mobile"}
+    ),
+    new LineUpdateFrame(
+      "PC MMO revenues rising",
+      "As graphical and network technologies have improved, massively multiplayer " +
+      "online games, typically played on PC, have become increasingly popular. " +
+      "Though consoles can support some of these games, PC's support for them is " +
+      "significantly more robust.",
+      new String[]{"Mobile"}
+    ),
+    new LineUpdateFrame(
+      "But mobile's where it's at!",
+      "Remember the DS and Wii? Accessibility is key. As smartphones have become " +
+      "more powerful and ubiquitous, mobile gaming revenue has shot up dramatically.",
+      new String[]{}
     )
   };
 }
@@ -109,10 +129,18 @@ class Intro extends Frame {
   }
 
   public Chart transition(Chart chart) {
-    String[] yearStrs = new String[years.size()];
-    for (int i = 0; i < years.size(); i++) yearStrs[i] = String.valueOf(years.get(i));
-    StackedBarChart sbchart = new StackedBarChart(platformsByYears, "year", yearStrs, "physical_sales", platformStrs, platforms);
+    String[] yearStrs = new String[platformYears.size()];
+    for (int i = 0; i < platformYears.size(); i++) yearStrs[i] = String.valueOf(platformYears.get(i));
+    StackedBarChart sbchart = new StackedBarChart(
+      platformsByYears,
+      "year", yearStrs,
+      "physical_sales", platformStrs,
+      platforms
+    );
     return sbchart;
+  }
+  
+  public void drawLegend(float x, float y, float w, float h) {
   }
 }
 
@@ -135,6 +163,49 @@ class BubbleUpdateFrame extends Frame {
       return new BubbleChart(tbl, "id", "platform", platformStrs, "sales", platforms); 
     }
   }
+  
+  public void drawLegend(float x, float y, float w, float h) {
+    float r = 10; // hacky hard code
+    stroke(0);
+    
+    // legend left title
+    textFont(createFont(MAIN_FONT + " Bold", FONT_SIZE * 1.5));
+    textAlign(LEFT, TOP);
+    fill(0);
+    text("Platforms", x, y + 5);
+    
+    // legend colors and tags
+    float sectX = x, sectW = w / (platforms.size() * 1.8);
+    float sectY = y + (h - FONT_SIZE * 1.5 + TEXT_GAP) / 2 + r;
+    textFont(createFont(MAIN_FONT, FONT_SIZE));
+    textAlign(CENTER, TOP);
+    
+    for (String p : platforms.keySet()) {
+      // color circle
+      fill(platforms.get(p));
+      ellipse(sectX + sectW / 2, sectY, r*2, r*2);
+      // text
+      fill(0);
+      text(p, sectX + sectW / 2, sectY + r + TEXT_GAP);
+      sectX += sectW;
+    }
+    
+    // seperating
+    line(x, y + h, x + w, y + h); // horizontal
+    line(sectX, y, sectX, y + h); // vertical
+    
+    // other info
+    fill(255);
+    ellipse(sectX + 20 + r, y + 20 + r, r*2, r*2);
+    fill(0);
+    textAlign(LEFT, TOP);
+    float textX = sectX + 20 + TEXT_GAP + r*2;
+    text(
+      " is one game for one platform, in millions of total physical units sold",
+      sectX + 20 + TEXT_GAP + r*2, y + 20,
+      w - textX + x, h
+    );
+  }
 }
 
 class BubbleFixedFrame extends BubbleUpdateFrame {
@@ -149,5 +220,72 @@ class BubbleFixedFrame extends BubbleUpdateFrame {
     BubbleChart bchart = (BubbleChart)super.transition(chart);
     bchart.fixNodes(fixed);
     return bchart;
+  }
+}
+
+class LineUpdateFrame extends Frame {
+  private String[] hidden;
+  
+  public LineUpdateFrame(String title, String text, String[] hidden) {
+    this.title = title;
+    this.text = text;
+    this.hidden = hidden;
+  }
+  
+  public Chart transition(Chart chart) {
+    LineChart lchart = null;
+    
+    if (chart.getClass() == LineChart.class) {
+      lchart = (LineChart)chart;
+      lchart.clearHidden();
+    } else {
+      String[] yearStrs = new String[revenueYears.size()];
+      for (int i = 0; i < revenueYears.size(); i++) yearStrs[i] = String.valueOf(revenueYears.get(i));
+      lchart = new LineChart(
+        rev,
+        "year", yearStrs,
+        "revenue, billions of USD", revenueStrs,
+        revenues
+      );
+    }
+    
+    for (String lbl : this.hidden) lchart.addHidden(lbl);
+    
+    return lchart;
+  }
+  
+  public void drawLegend(float x, float y, float w, float h) {
+    float r = 15; // hacky hard code
+    stroke(0);
+    
+    // legend left title
+    textFont(createFont(MAIN_FONT + " Bold", FONT_SIZE * 1.5));
+    textAlign(LEFT, TOP);
+    fill(0);
+    text("Revenues", x, y + 5);
+    
+    // legend colors and tags
+    HashMap<String, Integer> hiddenSet = new HashMap<String, Integer>(); // int is dummy
+    for (String s : this.hidden) hiddenSet.put(s, 0); 
+    
+    float sectX = x, sectW = w / (revenues.size() - hiddenSet.size());
+    float sectY = y + (h - FONT_SIZE * 1.5 + TEXT_GAP) / 2 + r;
+    textFont(createFont(MAIN_FONT, FONT_SIZE * 1.2));
+    textAlign(LEFT, CENTER);   
+    
+    for (String rev : revenues.keySet()) {
+      if (hiddenSet.containsKey(rev)) continue;
+      float lineW = r*2 + TEXT_GAP + textWidth(rev);
+      // color circle
+      fill(revenues.get(rev));
+      ellipse(sectX + (sectW - lineW) / 2 + r, sectY, r*2, r*2);
+      // text
+      fill(0);
+      text(rev, sectX + (sectW - lineW) / 2 + r*2 + TEXT_GAP, sectY);
+      sectX += sectW;
+    }
+    
+    // separating
+    line(x, y + h, x + w, y + h); // horizontal
   }
 }

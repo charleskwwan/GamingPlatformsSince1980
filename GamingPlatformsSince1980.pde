@@ -7,13 +7,18 @@ final int TEXT_GAP = 5;
 final int TICK_LEN = 5;
 
 // info about tables
-IntList years = years();
+// platform
+IntList platformYears = years(1980, 2017);
 HashMap<String, Integer> platforms = platforms(); // platform, color
 HashMap<String, String> platformsMap = groupPlatforms();
 String[] platformStrs = platforms.keySet().toArray(new String[platforms.keySet().size()]);
+// revenue
+IntList revenueYears = years(2013, 2017);
+HashMap<String, Integer> revenues = revenues(); // revenue src, color
+String[] revenueStrs = revenues.keySet().toArray(new String[revenues.keySet().size()]);
 
 // tables
-Table raw;
+Table raw, rev;
 Table platformsByYears;
 HashMap<Integer, Table> platformsForYears;
 ScrollLayout layout = null;
@@ -24,13 +29,14 @@ Tooltips tooltips = null;
 void setup() {
   size(displayWidth, displayHeight);
   
-  raw = loadTable("data.csv", "header,csv");  
+  raw = loadTable("data.csv", "header,csv");
+  rev = loadTable("rev.csv", "header,csv");
   platformsByYears = platformsByYears(raw);
   platformsForYears = new HashMap<Integer, Table>();
-  for (int year : years) platformsForYears.put(year, platformsForYear(raw, year));
+  for (int year : platformYears) platformsForYears.put(year, platformsForYear(raw, year));
   
   Frame[] frames = makeFrames();
-  layout = new ScrollLayout(HPADDING, 0, displayWidth - 2 * HPADDING, displayHeight, frames, platforms);
+  layout = new ScrollLayout(HPADDING, 0, displayWidth - 2 * HPADDING, displayHeight, frames);
   
   tooltips = new Tooltips();
 }
@@ -64,7 +70,7 @@ Table platformsByYears(Table raw) {
   tbl.addColumn("year");
   for (String platform : platforms.keySet()) tbl.addColumn(platform);
   // initialize rows
-  for (int year : years) {
+  for (int year : platformYears) {
     TableRow newRow = tbl.addRow();
     newRow.setInt("year", year);
     for (String platform : platforms.keySet()) newRow.setFloat(platform, 0);
@@ -120,9 +126,9 @@ Table platformsYearToTable(Table src, int year) {
 }
 
 /* INITIALIZERS, HARDCODED */
-IntList years() {
+IntList years(int lo, int hi) {
   IntList lst = new IntList();
-  for (int i = 1980; i <= 2017; i++) lst.append(i);
+  for (int i = lo; i <= hi; i++) lst.append(i);
   return lst;
 }
 
@@ -134,6 +140,14 @@ HashMap<String, Integer> platforms() {
   map.put("Xbox", color(255,255,0));
   map.put("Sega", color(255,102,0));
   map.put("Atari", color(153,51,204));
+  return map;
+}
+
+HashMap<String, Integer> revenues() {
+  HashMap<String, Integer> map = new HashMap<String, Integer>();
+  map.put("Console", color(255,140,0));
+  map.put("MMO", color(255,223,0));
+  map.put("Mobile", color(139,69,19));
   return map;
 }
 

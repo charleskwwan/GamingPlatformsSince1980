@@ -8,11 +8,12 @@ public static class TransitionValues {
   private static final ArrayList<TValue> values = new ArrayList<TValue>();
   
   private class TValue implements TransitionValue  {
-    private float currentValue, finalValue;
+    private float currentValue, finalValue, speed;
     
-    private TValue(float initialValue, float finalValue) {
+    private TValue(float initialValue, float finalValue, float speed) {
       this.currentValue = initialValue;
       setFinal(finalValue); // adds this to values for ticking
+      this.speed = speed;
     }
     
     public float getCurrent() {
@@ -32,13 +33,17 @@ public static class TransitionValues {
       if (abs(this.finalValue - this.currentValue) < 0.1) {
         this.currentValue = this.finalValue;
       } else {
-        this.currentValue += (this.finalValue - this.currentValue) * .1;
+        this.currentValue += (this.finalValue - this.currentValue) * this.speed;
       }
     }
   }
   
+  public static TransitionValue add(float initialValue, float finalValue, float speed) {
+    return new TransitionValues().new TValue(initialValue, finalValue, speed);
+  }
+  
   public static TransitionValue add(float initialValue, float finalValue) {
-    return new TransitionValues().new TValue(initialValue, finalValue);
+    return add(initialValue, finalValue, .1);
   }
   
   public static void tick() {

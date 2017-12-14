@@ -1,6 +1,5 @@
-public class StackedBarChart extends Chart {
+public class StackedBarChart extends AxisChart {
   private HashMap<String, Integer> colorMap;
-  private float ymax;
   private ArrayList<Bar> bars;
   
   public StackedBarChart(
@@ -10,9 +9,9 @@ public class StackedBarChart extends Chart {
   ) {
     // general
     super(tbl, xname, xlabels, yname, ylabels);
-    this.ymax = yMax();
     this.colorMap = colorMap;
-    this.bars = makeBars();
+    this.bars = new ArrayList<Bar>();
+    makeBars(this.tbl);
   }
   
   private class Bar extends DataPoint {
@@ -22,10 +21,6 @@ public class StackedBarChart extends Chart {
     public Bar(TableRow row) {
       super(row);
       this.drawhs = new TransitionValue[StackedBarChart.this.ylabels.length];
-      
-      // dummy for now
-      for (int i = 0; i < this.drawhs.length; i++)
-        this.drawhs[i] = TransitionValues.add(0, 0);
     }   
     
     /* draw */
@@ -49,7 +44,7 @@ public class StackedBarChart extends Chart {
         float yval = Float.valueOf(this.data.get(ylabel));
         float h = charth * yval / StackedBarChart.this.ymax;
         if (this.drawhs[i] == null) {
-          this.drawhs[i] = TransitionValues.add(0, h);
+          this.drawhs[i] = TransitionValues.add(0, h, .01);
         } else {
           this.drawhs[i].setFinal(h);
         }
@@ -76,8 +71,8 @@ public class StackedBarChart extends Chart {
       String yValStr = nf(Float.valueOf(this.data.get(StackedBarChart.this.ylabels[which])), 1, 2);
       String[] lines = new String[]{
         StackedBarChart.this.xname + ": " + this.data.get(StackedBarChart.this.xname), // x string
-        "platform: " + StackedBarChart.this.ylabels[which], // hacky
-        StackedBarChart.this.yname + ": " + yValStr // y string
+        "platform: " + StackedBarChart.this.ylabels[which], // platform string, hacky
+        StackedBarChart.this.yname + ": " + yValStr + " mil" // y string, hacky
       };
       drawDefault(lines);
     }
@@ -101,55 +96,35 @@ public class StackedBarChart extends Chart {
   }
   
   /* bar methods */
-  private ArrayList<Bar> makeBars() {
-    ArrayList<Bar> bars = new ArrayList<Bar>();
+  private void makeBars(Table tbl) {
     for (String lbl : this.xlabels) {
-      TableRow row = this.tbl.findRow(lbl, this.xname);
-      bars.add(new Bar(row));
+      TableRow row = tbl.findRow(lbl, this.xname);
+      this.bars.add(new Bar(row));
     }
-    return bars;
   }
   
-  /* chart and data methods */
+  /* ymax */
   private float yRowSum(TableRow row) {
     float sum = 0;
     for (String colName : this.ylabels) sum += row.getFloat(colName);
     return sum;
   }
   
-  private float yMax() {
+  protected float yMax(Table tbl) {
     FloatList lst = new FloatList();
     for (String lbl : this.xlabels) {
-      TableRow row = this.tbl.findRow(lbl, this.xname);
+      TableRow row = tbl.findRow(lbl, this.xname);
       lst.append(yRowSum(row));
     }
     return lst.max();
   }
   
-  private float xOffset() {
-    this.ymax = yMax();
-    String ymaxStr = nf(this.ymax, 1, 2); // pad decimal points to 2
-    return FONT_SIZE + textWidth(ymaxStr) + 2 * TEXT_GAP + TICK_LEN;
-  }
-  
-  private float yOffset() {
-    FloatList lst = new FloatList();
-    for (String label : this.xlabels) lst.append(textWidth(label));
-    return FONT_SIZE + lst.max() + 2 * TEXT_GAP + TICK_LEN;
-  }
-  
-  private int nYGaps(float h) {
-    return int(h / 40);
-  }
-  
-  /* abstracts */
-  public void draw(float x, float y, float w, float h) {  
+  /* draw */
+  public void draw(float x, float y, float w, float h) {    
     // prep
     float xoff = xOffset(), yoff = yOffset();
     float chartx = x + xoff, chartw = w - xoff;
     float charty = y, charth = h - yoff;
-    PFont font = createFont(MAIN_FONT, FONT_SIZE);
-    textFont(font);
     
     // bars
     for (int i = 0; i < this.xlabels.length; i++) {
@@ -157,41 +132,12 @@ public class StackedBarChart extends Chart {
       this.bars.get(i).draw(tickX, charty + charth, chartw, charth);
     }
     
+    // axes
+    PFont font = createFont(MAIN_FONT, FONT_SIZE);
+    textFont(font);
     fill(0);
     stroke(0);
-    // axes
-    line(chartx, charty + charth, chartx + chartw, charty + charth);
-    line(chartx, charty, chartx, charty + charth);
-    // x label
-    textAlign(CENTER, BOTTOM);
-    text(this.xname, chartx + chartw/2, y + h); 
-    // y label
-    textAlign(CENTER, TOP);
-    pushMatrix();
-    translate(x, y + charth/2);
-    rotate(-HALF_PI);
-    text(this.yname, 0, 0);
-    popMatrix();
-    // x ticks/labels
-    textAlign(RIGHT, CENTER);
-    for (int i = 0; i < this.xlabels.length; i++) {
-      float tickX = chartx + chartw * (i + .5) / this.xlabels.length;
-      line(tickX, charty + charth, tickX, charty + charth + TICK_LEN);
-      pushMatrix();
-      translate(tickX, charty + charth + TICK_LEN + TEXT_GAP);
-      rotate(-HALF_PI);
-      text(this.xlabels[i], 0, 0);
-      popMatrix();
-    }
-    // y ticks/labels
-    textAlign(RIGHT, CENTER);
-    int ngaps = nYGaps(h);
-    for (int i = 0; i < ngaps + 1; i++) {
-      float tickY = charty + charth * i / ngaps;
-      line(chartx, tickY, chartx - TICK_LEN, tickY);
-      String tickStr = nf((1 - i / float(ngaps)) * this.ymax, 1, 2);
-      text(tickStr, chartx - TICK_LEN - TEXT_GAP, tickY);
-    }
+    drawAxes(x, y, w, h, chartx, charty, chartw, charth);
   }
   
   /* mouse interactions */
