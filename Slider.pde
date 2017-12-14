@@ -18,16 +18,16 @@ public class Slider extends ViewPort {
   // discrete type
   public Slider(float x, float y, float w, float h, SlideDirection dir, int n, color bg, color fg) {
     super(x, y, w, h);
-    set(dir, SlideType.DISCRETE, bg, fg);
     this.n = n;
+    set(dir, SlideType.DISCRETE, bg, fg);
   }
   
   // continuous type
   public Slider(float x, float y, float w, float h, SlideDirection dir, float lo, float hi, color bg, color fg) {
     super(x, y, w, h);
-    set(dir, SlideType.CONTINUOUS, bg, fg);
     this.lo = min(lo, hi);
     this.hi = max(lo, hi);
+    set(dir, SlideType.CONTINUOUS, bg, fg);
   }
   
   private class Block extends ViewPort {

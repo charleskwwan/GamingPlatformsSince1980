@@ -26,6 +26,8 @@ ScrollLayout layout = null;
 // misc
 Tooltips tooltips = null;
 
+Slider slider;
+
 void setup() {
   size(displayWidth, displayHeight);
   
