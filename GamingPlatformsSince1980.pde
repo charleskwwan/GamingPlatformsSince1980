@@ -30,7 +30,7 @@ void setup() {
   for (int year : years) platformsForYears.put(year, platformsForYear(raw, year));
   
   Frame[] frames = makeFrames();
-  layout = new ScrollLayout(HPADDING, 0, displayWidth - 2 * HPADDING, displayHeight, frames);
+  layout = new ScrollLayout(HPADDING, 0, displayWidth - 2 * HPADDING, displayHeight, frames, platforms);
   
   tooltips = new Tooltips();
 }

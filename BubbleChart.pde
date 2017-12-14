@@ -141,9 +141,9 @@ public class BubbleChart extends Chart {
     
     public void drawTooltip() {
       String[] lines = new String[]{
-        "name: " + this.data.get("name"), // name string
+        "name: " + this.data.get("name"), // name string, hacky
         BubbleChart.this.xname + ": " + this.data.get(BubbleChart.this.xname), // x string
-        BubbleChart.this.yname + ": " + this.data.get(BubbleChart.this.yname) // y string
+        BubbleChart.this.yname + ": " + this.data.get(BubbleChart.this.yname) + " mil" // y string, hacky
       };
       drawDefault(lines);
     }

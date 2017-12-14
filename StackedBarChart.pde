@@ -16,13 +16,17 @@ public class StackedBarChart extends Chart {
   }
   
   private class Bar extends DataPoint {
-    float drawx, drawy, draww;
-    float[] drawhs;
+    private float drawx, draww, drawy;
+    private TransitionValue[] drawhs;
     
     public Bar(TableRow row) {
       super(row);
-      this.drawhs = new float[StackedBarChart.this.ylabels.length];
-    }
+      this.drawhs = new TransitionValue[StackedBarChart.this.ylabels.length];
+      
+      // dummy for now
+      for (int i = 0; i < this.drawhs.length; i++)
+        this.drawhs[i] = TransitionValues.add(0, 0);
+    }   
     
     /* draw */
     // private helper for draw
@@ -30,7 +34,7 @@ public class StackedBarChart extends Chart {
       stroke(strk);
       strokeWeight(strkWgt);
       fill(StackedBarChart.this.colorMap.get(StackedBarChart.this.ylabels[i]));
-      rect(this.drawx, y, this.draww, this.drawhs[i]);
+      rect(this.drawx, y, this.draww, this.drawhs[i].getCurrent());
     }
     
     public void draw(float x, float y, float chartw, float charth) {
@@ -44,7 +48,11 @@ public class StackedBarChart extends Chart {
         String ylabel = StackedBarChart.this.ylabels[i];
         float yval = Float.valueOf(this.data.get(ylabel));
         float h = charth * yval / StackedBarChart.this.ymax;
-        this.drawhs[i] = h;
+        if (this.drawhs[i] == null) {
+          this.drawhs[i] = TransitionValues.add(0, h);
+        } else {
+          this.drawhs[i].setFinal(h);
+        }
         y -= h;
       }
       // draw rects
@@ -56,7 +64,7 @@ public class StackedBarChart extends Chart {
         } else {
           drawRect(i, y, 0, 1);
         }
-        y += this.drawhs[i];
+        y += this.drawhs[i].getCurrent();
       }
       if (which >= 0) drawRect(which, whichy, 150, 4);
       strokeWeight(1);
@@ -75,12 +83,14 @@ public class StackedBarChart extends Chart {
     }
     
     private int whichOver() {
-      float y = this.drawy;
+      float  y = this.drawy;
       for (int i = 0; i < this.drawhs.length; i++) {
+        if (this.drawhs[i] == null) return -1; // not yet initialized
+        float h = this.drawhs[i].getCurrent();
         if (mouseX > this.drawx && mouseX < this.drawx + this.draww &&
-            mouseY > y - this.drawhs[i] && mouseY < y)
+            mouseY > y - h && mouseY < y)
           return i;
-        y -= this.drawhs[i];
+        y -= h;
       }
       return -1;
     }
