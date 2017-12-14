@@ -46,7 +46,7 @@ void draw() {
   mouseOver();
   TransitionValues.tick();
   if (layout != null) layout.draw();
-  if (tooltips != null) tooltips.draw();  
+  if (tooltips != null) tooltips.draw();
 }
 
 /* mouse interactions*/

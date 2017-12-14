@@ -1,5 +1,5 @@
 public class ViewPort {
-  private float x, y, w, h, cx, cy;
+  protected float x, y, w, h, cx, cy;
   
   public ViewPort(float x, float y, float w, float h) {
      set(x, y, w, h);
