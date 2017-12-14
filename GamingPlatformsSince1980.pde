@@ -24,7 +24,7 @@ Tooltips tooltips = null;
 void setup() {
   size(displayWidth, displayHeight);
   
-  raw = loadTable("data.csv", "header,csv");
+  raw = loadTable("data.csv", "header,csv");  
   platformsByYears = platformsByYears(raw);
   platformsForYears = new HashMap<Integer, Table>();
   for (int year : years) platformsForYears.put(year, platformsForYear(raw, year));
@@ -38,6 +38,7 @@ void setup() {
 void draw() {
   background(255);
   mouseOver();
+  TransitionValues.tick();
   if (layout != null) layout.draw();
   if (tooltips != null) tooltips.draw();  
 }
@@ -86,15 +87,16 @@ Table platformsByYears(Table raw) {
 Table platformsForYear(Table raw, int year) {
   Table tbl = new Table();
   // columns
-  for (String col : new String[]{"name", "genre", "year", "platform", "sales"})
+  for (String col : new String[]{"id", "name", "genre", "year", "platform", "sales"})
     tbl.addColumn(col);
   // convert
   for (TableRow rawRow : raw.findRows(String.valueOf(year), "year")) {
     TableRow tblRow = tbl.addRow();
-    for (String col : new String[]{"name", "genre"})
+    for (String col : new String[]{"name", "genre"}) // strings
       tblRow.setString(col, rawRow.getString(col));
+    for (String col : new String[]{"id", "year"}) // ints
+      tblRow.setInt(col, rawRow.getInt(col));
     tblRow.setString("platform", platformsMap.get(rawRow.getString("platform")));
-    tblRow.setInt("year", rawRow.getInt("year"));
     tblRow.setFloat("sales", rawRow.getFloat("physical_sales"));
   }
   

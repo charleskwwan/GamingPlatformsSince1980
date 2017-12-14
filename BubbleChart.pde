@@ -1,16 +1,21 @@
+private final float FIXED_DIM_PERCENT = .8;
+
 public class BubbleChart extends Chart {
+  private String idname;
   private HashMap<String, Integer> colorMap;
   private HashMap<String, ArrayList<Node>> nodes;
-  private ArrayList<Node> dyingNodes; // nodes transitioning out
+  private ArrayList<Node> fixedNodes, dyingNodes; // nodes transitioning out
   
   public BubbleChart(
     Table tbl, 
-    String xname, String[] xlabels, String yname,
+    String idname, String xname, String[] xlabels, String yname,
     HashMap<String, Integer> colorMap
   ) {
     super(tbl, xname, xlabels, yname, new String[]{});
+    this.idname = idname;
     this.colorMap = colorMap;
     this.dyingNodes = new ArrayList<Node>();
+    this.fixedNodes = new ArrayList<Node>();
     
     // node initialization
     this.nodes = new HashMap<String, ArrayList<Node>>();
@@ -21,31 +26,46 @@ public class BubbleChart extends Chart {
   
   private class Node extends DataPoint {
     private PVector pos, v0;
-    private float r, transr;
+    private TransitionValue r, drawx, drawy, drawr;
     private ArrayList<PVector> q;
-    private float drawx, drawy, drawr;
 
     public Node(float x, float y, float r, TableRow row) {
       super(row);
       this.pos = new PVector(x, y);
       this.v0 = new PVector(0, 0);
-      this.transr = 0;
-      this.r = r;
+      this.r = TransitionValues.add(0, r);
       this.q = new ArrayList<PVector>();
+      
+      // set dummy draw dimensions for now
+      this.drawx = TransitionValues.add(getCenterX(), getCenterX());
+      this.drawy = TransitionValues.add(getCenterY(), getCenterY());
+      this.drawr = TransitionValues.add(0, 0);
     }
     
     /* general */
+    public String getId() {
+      return this.data.get(BubbleChart.this.idname);
+    }
+    
+    public String getLabel() {
+      return this.data.get(BubbleChart.this.xname);
+    }
+    
     public float getRadius() {
-      return this.transr;
+      return this.r.getCurrent();
+    }
+    
+    private float getTrueRadius() {
+      return this.r.getFinal();
     }
     
     public float getMass() {
-      return pow(this.r, 2);
+      return pow(this.r.getFinal(), 2);
     }
     
     public void update(float r, TableRow row) {
       if (row != null) set(row);
-      this.r = r;
+      this.r.setFinal(r);
     }
     
     /* physics */
@@ -57,7 +77,8 @@ public class BubbleChart extends Chart {
     
     public PVector springForce(Node other, float len) {
       float dist = pow(this.pos.x - other.pos.x, 2) + pow(this.pos.y - other.pos.y, 2);
-      if (pow(this.r - other.r, 2) < dist && dist < pow(this.r + other.r, 2)) {
+      float thisr = getTrueRadius(), otherr = other.getTrueRadius();
+      if (pow(thisr - otherr, 2) < dist && dist < pow(thisr + otherr, 2)) {
         return new PVector(0, 0);
       }
       return Physics.hookes(this.pos, other.pos, len);
@@ -74,7 +95,7 @@ public class BubbleChart extends Chart {
         this.pos.x = max(0, min(getW(), this.pos.x));
         this.v0.x = 0;
       }
-      if (this.pos.y < 0 || this.pos.y > h) {
+      if (yScale(this.pos.y) < 0 || yScale(this.pos.y) > yScale(h)) {
         this.pos.y = max(0, min(getH(), this.pos.y));
         this.v0.y = 0;
       }
@@ -91,18 +112,31 @@ public class BubbleChart extends Chart {
       enclose();
     }
     
-    /* drawing */
-    public void draw(float x, float y, float w, float h) {
-      this.drawx = x + this.pos.x * (w / getW());
-      this.drawy = y + this.pos.y * (h / getH());
-      this.drawr = this.transr * (w < h ? w / getW() : h / getH());
+    /* drawing */    
+    private void draw() {
       stroke(isOver() ? 150 : 0);
       strokeWeight(isOver() ? 4 : 1);
       fill(BubbleChart.this.colorMap.get(this.data.get(BubbleChart.this.xname)));
-      ellipse(this.drawx, this.drawy, this.drawr*2, this.drawr*2);
+      ellipse(
+        this.drawx.getCurrent(), this.drawy.getCurrent(),
+        this.drawr.getCurrent()*2, this.drawr.getCurrent()*2
+      );
       strokeWeight(1);
-      // shift transr closer to r
-      this.transr += (this.r - this.transr) * .1;
+    }
+    
+    // x, y, w, h are chart dimensions
+    public void draw(float x, float y, float w, float h) {
+      this.drawx.setFinal(x + this.pos.x * (w / getW()));
+      this.drawy.setFinal(yScale(y + this.pos.y * (h / getH())));
+      this.drawr.setFinal(this.getRadius() * (w < h ? w / getW() : h / getH()));
+      draw();
+    }
+    
+    public void drawFixed(float x, float y, float chartw, float charth) {
+      this.drawx.setFinal(x);
+      this.drawy.setFinal(y);
+      this.drawr.setFinal(this.getRadius() * (chartw < charth ? chartw / getW() : charth / getH()));
+      draw();
     }
     
     public void drawTooltip() {
@@ -116,7 +150,8 @@ public class BubbleChart extends Chart {
     
     /* mouse interactions */
     public boolean isOver() {
-      return pow(mouseX - this.drawx, 2) + pow(mouseY - this.drawy, 2) <= pow(this.drawr, 2);
+      return pow(mouseX - this.drawx.getCurrent(), 2) + pow(mouseY - this.drawy.getCurrent(), 2) <= 
+             pow(this.drawr.getCurrent(), 2);
     }
   }
   
@@ -135,6 +170,14 @@ public class BubbleChart extends Chart {
   
   private float getH() {
     return min(width, height);
+  }
+  
+  private float xScale(float val) {
+    return val;
+  }
+  
+  private float yScale(float val) {
+    return val * (this.fixedNodes.isEmpty() ? 1 : FIXED_DIM_PERCENT);
   }
   
   private float getCenterX() {
@@ -227,13 +270,57 @@ public class BubbleChart extends Chart {
     }
   }
   
+  // accumulate all changes
   private void useTheForce() {
     for (String lbl : this.nodes.keySet())
       for (Node node : this.nodes.get(lbl))
         node.accumulate();
   }
   
-  /* abstract */
+  /* node fixing */
+  public void fixNodes(String[] ids) {
+    // use hashmap like set
+    HashMap<String, String> idSet = new HashMap<String, String>();
+    for (String id : ids) idSet.put(id, null);
+    // iterate thru nodes looking for nodes with ids in idSet to fix
+    for (String lbl : this.nodes.keySet()) {
+      ArrayList<Node> lblNodes = this.nodes.get(lbl);
+      for (int i = lblNodes.size()-1; i >= 0; i--) {
+        Node n = lblNodes.get(i);
+        if (idSet.containsKey(n.getId()))
+          this.fixedNodes.add(lblNodes.remove(i));
+      }
+    }
+  }
+  
+  // unfixes all fixed nodes
+  public void unfixNodes() {
+    for (int i = this.fixedNodes.size()-1; i >= 0; i--) {
+      Node node = this.fixedNodes.remove(i);
+      this.nodes.get(node.getLabel()).add(0, node);
+    }
+  }
+  
+  /* draw */
+  private void drawDyingNodes(float x, float y, float w, float h) {
+    for (int i = this.dyingNodes.size()-1; i >= 0; i--) {
+      Node node = this.dyingNodes.get(i);
+      if (node.getRadius() < 1) {
+        this.dyingNodes.remove(node); // when small enough
+      } else {
+        node.draw(x, y, w, h);
+      }
+    }
+  }
+  
+  private void drawFixedNodes(float x, float y, float w, float h) {
+    float nodeW = w / this.fixedNodes.size();
+    y += h * (FIXED_DIM_PERCENT + 1) / 2;
+    for (int i = 0; i < this.fixedNodes.size(); i++) {
+      this.fixedNodes.get(i).drawFixed(x + (i + 0.5) * nodeW, y, w, h);
+    }
+  }
+  
   public void draw(float x, float y, float w, float h) {
     chargeTheForce();
     useTheForce();
@@ -241,16 +328,8 @@ public class BubbleChart extends Chart {
     for (String lbl : this.nodes.keySet())
       for (Node node : this.nodes.get(lbl))
         node.draw(x, y, w, h);
-        
-    // draw dying nodes if they are still big enough, otherwise remove them
-    for (int i = this.dyingNodes.size()-1; i >= 0; i--) {
-      Node node = this.dyingNodes.get(i);
-      if (node.getRadius() < 1) {
-        this.dyingNodes.remove(node);
-      } else {
-        node.draw(x, y, w, h);
-      }
-    }
+    drawDyingNodes(x, y, w, h);
+    drawFixedNodes(x, y, w, h);
   }
   
   /* mouse interactions */
@@ -259,6 +338,8 @@ public class BubbleChart extends Chart {
     for (String lbl : this.nodes.keySet())
       for (Node n : this.nodes.get(lbl))
         if (n.isOver()) which = n;
+    for (Node n : this.fixedNodes)
+      if (n.isOver()) which = n;
     return which;
   }
   

@@ -30,28 +30,31 @@ public Frame[] makeFrames() {
       "gains a foothold.",
       2001
     ),
-    new BubbleUpdateFrame(
+    new BubbleFixedFrame(
       "2004: The peak of the Playstation 2",
       "Released in 2000, the PlayStation 2 is the most popular console " +
       "of all time, supported by a library of popular and exclusive game " +
-      "franchises, such as 'Grand Theft Auto', 'Meta Gear Solid', and " +
+      "franchises, such as 'Grand Theft Auto', 'Metal Gear Solid', and " +
       "'Dragon Quest'.",
-      2004
+      2004,
+      new String[]{"18", "279", "193", "118", "50"}
     ),
-    new BubbleUpdateFrame(
+    new BubbleFixedFrame(
       "2005: The return of handhelds",
       "Nintendo releases the DS. Sporting a touch interface, it introduces a " +
       "series of non-traditional games, such as 'Brain Training' and 'Nintendogs', " +
       "that attract a wider and more varied audience than before.",
-      2005
+      2005,
+      new String[]{"11", "20", "29", "12", "46"}
     ),
-    new BubbleUpdateFrame(
+    new BubbleFixedFrame(
       "2006: Nintendo surges forward",
       "Encouraged by the success of the DS, Nintendo next releases " +
       "the Wii. A breakthrough in motion sensing technology, the Wii remote " +
       "provided another highly accessible interface for non-traditional " +
       "gamers, supported by classics like 'Wii Sports' and 'Wii Play'.",
-      2006
+      2006,
+      new String[]{"1", "8"}
     ),
     new BubbleUpdateFrame(
       "2007: Console power struggles",
@@ -125,23 +128,26 @@ class BubbleUpdateFrame extends Frame {
   public Chart transition(Chart chart) {
     Table tbl = platformsForYears.get(this.year);
     if (chart.getClass() == BubbleChart.class) {
+      ((BubbleChart)chart).unfixNodes();
       ((BubbleChart)chart).updateNodes(tbl);
       return chart;
     } else {
-      return new BubbleChart(tbl, "platform", platformStrs, "sales", platforms); 
+      return new BubbleChart(tbl, "id", "platform", platformStrs, "sales", platforms); 
     }
   }
 }
 
-class Frame11 extends Frame {
-  public Frame11() {
-    this.title = "2013: A new hope?";
-    this.text = "The simultaneous release of the Xbox One and PlayStation 4 revitalizes " +
-                "the market...";
+class BubbleFixedFrame extends BubbleUpdateFrame {
+  private String[] fixed;
+  
+  public BubbleFixedFrame(String title, String text, int year, String[] fixed) {
+    super(title, text, year);
+    this.fixed = fixed;
   }
-
+  
   public Chart transition(Chart chart) {
-    BubbleChart bchart = new BubbleChart(platformsForYears.get(2013), "platform", platformStrs, "sales", platforms);
+    BubbleChart bchart = (BubbleChart)super.transition(chart);
+    bchart.fixNodes(fixed);
     return bchart;
   }
 }
