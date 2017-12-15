@@ -115,7 +115,7 @@ public Frame[] makeFrames() {
       "more powerful and ubiquitous, mobile gaming revenue has shot up dramatically.",
       new String[]{}
     ),
-    new BubbleExploreFrame("Explore all years and platforms:", "", 1980)
+    new BubbleExploreFrame("Explore all years and platforms", "", 1980)
   };
 }
 

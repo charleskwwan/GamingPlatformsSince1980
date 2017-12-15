@@ -81,7 +81,7 @@ public class Slider extends ViewPort {
         }
       }
       
-      noStroke();
+      //noStroke();
       fill(Slider.this.fg);
       rect(drawx, drawy, getW(), getH());
     }
@@ -132,7 +132,7 @@ public class Slider extends ViewPort {
   /* draw */
   public void draw() {
     // bg
-    noStroke();
+    stroke(0);
     fill(this.bg);
     rect(getX(), getY(), getW(), getH());
     // fg

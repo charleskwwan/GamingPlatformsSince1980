@@ -34,7 +34,7 @@ public class ScrollLayout extends ViewPort {
       yoffset += frameHeight(i, frame.title, frame.text);
     }
     this.totalHeight = yoffset + getH()/2; // add getH to allow scrolling
-    slider = new Slider(getX(), 0, width / 10, 20, SlideDirection.HORIZONTAL, 39, color(#ccebff), color (#008ae6));
+    slider = new Slider(getX(), 0, width / 6, 40, SlideDirection.HORIZONTAL, 39, color(211,211,211), color (0));
     setButtons();     
   }
   
@@ -43,8 +43,9 @@ public class ScrollLayout extends ViewPort {
       int i = 0;
       for (HashMap.Entry<String, Integer> entry : platforms().entrySet()){
          String platform = entry.getKey();
-         Button b = new Button(0, 0, 75, 20, platform); 
-         b.c1 = entry.getValue();
+         Button b = new Button(0, 0, 100, 50, platform); 
+         b.c2 = color(211,211,211);
+         b.c1 = color(255);
          buttons[i] = b;
          i++;
       }
@@ -155,25 +156,42 @@ public class ScrollLayout extends ViewPort {
  
  private void placeButtons(){
    int i = this.frames.size() -1;
-    float yoffset = this.scrolly + this.frames.get(i).snd + topPadding(i) - 100;
+    float yoffset = this.scrolly + this.frames.get(i).snd + topPadding(i) - 70;
+    textFont(createFont(MAIN_FONT, textSz(i)));
+    textSize(20);
+    text("Platforms:", getX(), yoffset);
+    yoffset +=40;
+    int a = 0;
+    float x1 = getX();
+    float x2 = getX() + 110;
     for(Button b : buttons){
-        b.x = getX();
+      if(a % 2 == 0){
+        b.x = x1;
         b.y = yoffset;
-        yoffset += 20;
-        b.draw();
+      } else{
+        b.x = x2;
+        b.y = yoffset;
+        yoffset += 60;
+      }
+      a++;
+      b.draw();
     }
  }
  private void setSlider(){
       int i = this.frames.size() -1;
       float yoffset = this.scrolly + this.frames.get(i).snd + topPadding(i) - 200;
-      slider.y = yoffset + 50;
-      slider.block.y = yoffset + 50;
+      slider.y = yoffset + 60;
+      slider.block.y = yoffset + 60;
       slider.makeBlock();
       int yearVal = (int)slider.getValue() + (int)1980;
       if (yearVal == 2018) yearVal = 2017;
       textFont(createFont(MAIN_FONT, textSz(i)));
       fill(0);
+      textSize(20);
       text("Year: " + yearVal, getX(), slider.y - 25);
+      textSize(10);
+      text("1980", getX(), slider.y + 25);
+      text("2017", getX() + slider.w - 25, slider.y + 25); 
  }
   
   private void drawLegend(int i) {

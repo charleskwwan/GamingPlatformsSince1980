@@ -47,16 +47,20 @@ public class Button {
     //  } else{
     //     fill(c2); 
     //  }
+    color textC = color(0);
      if(buttonOn){
         fill(c1); 
      } else {
         fill(c2);
+        textC = color(#696969);
      }
     
     stroke(0);
-    rect(x, y, w, h);
-    fill(0);
-    text(title, x + 5, y + 1);
+    rect(x, y, w, h, 7);
+    fill(textC);
+    textSize(15);
+    textAlign(CENTER);
+    text(title, x + 50, y + 25);
   }
 }
 
