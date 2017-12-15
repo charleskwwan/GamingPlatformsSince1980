@@ -1,6 +1,3 @@
-import controlP5.*;
-ControlP5 cp5;
-
 final int displayWidth = 1200, displayHeight = 800;
 final int HPADDING = 100;
 final int SCROLL_SPEED = 20;
@@ -33,7 +30,7 @@ Slider slider;
 
 void setup() {
   size(displayWidth, displayHeight);
-  
+  pixelDensity(2);
   raw = loadTable("data.csv", "header,csv");
   rev = loadTable("rev.csv", "header,csv");
   platformsByYears = platformsByYears(raw);
