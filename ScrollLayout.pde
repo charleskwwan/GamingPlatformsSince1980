@@ -34,7 +34,7 @@ public class ScrollLayout extends ViewPort {
       yoffset += frameHeight(i, frame.title, frame.text);
     }
     this.totalHeight = yoffset + getH()/2; // add getH to allow scrolling
-    slider = new Slider(getX(), 0, width / 6, 40, SlideDirection.HORIZONTAL, 39, color(211,211,211), color (0));
+    slider = new Slider(getX(), 0, width / 6, 35, SlideDirection.HORIZONTAL, 39, color(211,211,211), color (0));
     setButtons();     
   }
   
@@ -43,7 +43,7 @@ public class ScrollLayout extends ViewPort {
       int i = 0;
       for (HashMap.Entry<String, Integer> entry : platforms().entrySet()){
          String platform = entry.getKey();
-         Button b = new Button(0, 0, 100, 50, platform); 
+         Button b = new Button(0, 0, 100, 40, platform); 
          b.c2 = color(211,211,211);
          b.c1 = color(255);
          buttons[i] = b;

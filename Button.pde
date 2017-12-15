@@ -67,7 +67,7 @@ public class Button {
     rect(x, y, w, h, 7);
     fill(textC);
     textAlign(CENTER);
-    text(title, x + 50, y + 25);
+    text(title, x + 50, y + 20);
   }
 }
 
