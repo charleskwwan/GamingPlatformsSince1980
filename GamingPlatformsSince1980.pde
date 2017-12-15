@@ -30,7 +30,7 @@ Slider slider;
 
 void setup() {
   size(displayWidth, displayHeight);
-  pixelDensity(2);
+  pixelDensity(displayDensity());  
   raw = loadTable("data.csv", "header,csv");
   rev = loadTable("rev.csv", "header,csv");
   platformsByYears = platformsByYears(raw);
