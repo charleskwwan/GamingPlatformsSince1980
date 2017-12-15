@@ -1,4 +1,4 @@
-public static class Physics {
+  public static class Physics {
   private static final float HOOKES = 0.0001;
   private static final float COULOMBS = 2000;
   private static final float DAMP = 0.1;

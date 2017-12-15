@@ -114,7 +114,8 @@ public Frame[] makeFrames() {
       "Remember the DS and Wii? Accessibility is key. As smartphones have become " +
       "more powerful and ubiquitous, mobile gaming revenue has shot up dramatically.",
       new String[]{}
-    )
+    ),
+    new BubbleExploreFrame("Explore all years and platforms:", "", 1980)
   };
 }
 
@@ -229,6 +230,54 @@ class BubbleFixedFrame extends BubbleUpdateFrame {
     return bchart;
   }
 }
+
+class BubbleExploreFrame extends PlatformFrame {
+  private int year;
+  
+  public BubbleExploreFrame(String title, String text, int year) {
+    this.title = title;
+    this.text = text;
+    this.year = year;
+  }
+  
+  public Chart transition(Chart chart) {
+    Table tbl = platformsForYears.get(this.year);
+    if (chart.getClass() == BubbleChart.class) {
+      ((BubbleChart)chart).unfixNodes();
+      ((BubbleChart)chart).updateNodes(tbl);
+      return chart;
+    } else {
+      return new BubbleChart(tbl, "id", "platform", platformStrs, "sales", platforms); 
+    }
+  }
+  
+   public Chart transitionYearPlatforms(Chart chart, int year, String[] ps) {
+    Table tbl = platformsForYears.get(year);
+    Table t = new Table();
+    for (String col : new String[]{"id", "name", "genre", "year", "platform", "sales"})
+    t.addColumn(col);
+    for(String p : ps){
+       for (TableRow row: tbl.rows()){
+           if(row.getString("platform") == p){
+               t.addRow(row);
+           }
+       }
+    }
+    
+    if (chart.getClass() == BubbleChart.class) {
+      ((BubbleChart)chart).unfixNodes();
+      ((BubbleChart)chart).updateNodes(t);
+      this.year = year;
+      return chart;
+    } else {
+      return new BubbleChart(t, "id", "platform", platformStrs, "sales", platforms); 
+    }
+  }
+  public void setYear(int year){
+     this.year = year; 
+  }
+}
+
 
 class LineUpdateFrame extends Frame {
   private String[] hidden;

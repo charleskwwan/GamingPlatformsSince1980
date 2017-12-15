@@ -1,3 +1,6 @@
+import controlP5.*;
+ControlP5 cp5;
+
 final int displayWidth = 1200, displayHeight = 800;
 final int HPADDING = 100;
 final int SCROLL_SPEED = 20;
@@ -56,6 +59,30 @@ void mouseOver() {
   layout.onOver();
 }
 
+void mousePressed(){
+   if(layout != null){
+      if(layout.lastFrame){
+          layout.slider.onPress();
+      }
+   }
+}
+
+void mouseDragged(){
+   if(layout != null){
+      if(layout.lastFrame){
+          layout.slider.onDrag();
+      }
+   }
+}
+
+void mouseReleased(){
+   if(layout != null){
+      if(layout.lastFrame){
+          layout.slider.onRelease();
+      }
+   }
+}
+
 void mouseWheel(MouseEvent event) {
   float e = event.getCount();
   if (e > 0) {
@@ -111,6 +138,27 @@ Table platformsForYear(Table raw, int year) {
   return tbl;
 }
 
+Table tableForPlatforms(Table raw, String[] platforms) {
+  Table tbl = new Table();
+  // columns
+  for (String col : new String[]{"id", "name", "genre", "year", "platform", "sales"})
+    tbl.addColumn(col);
+  // convert
+  for(String p : platforms){
+      for (TableRow rawRow : raw.findRows(p, "platform")) {
+    TableRow tblRow = tbl.addRow();
+    for (String col : new String[]{"name", "genre"}) // strings
+      tblRow.setString(col, rawRow.getString(col));
+    for (String col : new String[]{"id", "year"}) // ints
+      tblRow.setInt(col, rawRow.getInt(col));
+    tblRow.setString("platform", platformsMap.get(rawRow.getString("platform")));
+    //tblRow.setFloat("sales", rawRow.getFloat("physical_sales"));
+  }
+  }
+  
+  return tbl;
+}
+
 Table platformsYearToTable(Table src, int year) {
   Table tbl = new Table();
   // add columns
@@ -125,6 +173,17 @@ Table platformsYearToTable(Table src, int year) {
   }
   
   return tbl;
+}
+
+/* button functions */
+void mouseClicked(){
+  //Use list of buttons in ScrollLayout
+  if(layout != null){
+     //go through list of buttons to check if clicking on buttos
+     for(Button b : layout.buttons){
+         b.onClick();
+     }
+  }
 }
 
 /* INITIALIZERS, HARDCODED */

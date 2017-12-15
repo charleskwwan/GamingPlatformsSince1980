@@ -10,6 +10,9 @@ public class ScrollLayout extends ViewPort {
   private int active; // 0 for intro, 1->n for rest
   private float scrolly, totalHeight;
   private Pair<Integer, TransitionValue> legendX;
+  public Slider slider;
+  public boolean lastFrame = false;
+  public Button[] buttons;
   
   public ScrollLayout(
     float x, float y, float w, float h,
@@ -31,8 +34,21 @@ public class ScrollLayout extends ViewPort {
       yoffset += frameHeight(i, frame.title, frame.text);
     }
     this.totalHeight = yoffset + getH()/2; // add getH to allow scrolling
+    slider = new Slider(getX(), 0, width / 10, 20, SlideDirection.HORIZONTAL, 39, color(#ccebff), color (#008ae6));
+    setButtons();     
   }
   
+  private void setButtons(){
+      buttons = new Button[6];
+      int i = 0;
+      for (HashMap.Entry<String, Integer> entry : platforms().entrySet()){
+         String platform = entry.getKey();
+         Button b = new Button(0, 0, 75, 20, platform); 
+         b.c1 = entry.getValue();
+         buttons[i] = b;
+         i++;
+      }
+  }
   /* frame methods */
   private float textHeight(String text, float wrapWidth, String fontName, float fontSize) {
     textFont(createFont(fontName, fontSize));
@@ -76,7 +92,7 @@ public class ScrollLayout extends ViewPort {
     Frame frame = this.frames.get(i).fst;
     float yoffset = this.scrolly + this.frames.get(i).snd + topPadding(i);
     float frameWidth = frameWidth(i);
-    
+    if(i == this.frames.size() -1 ) yoffset = yoffset - 200;
     textAlign(i == 0 ? CENTER : LEFT, TOP);
     // title
     textFont(createFont(MAIN_FONT + " Bold", titleSz(i)));
@@ -99,12 +115,66 @@ public class ScrollLayout extends ViewPort {
                 frameHeight(i, frame.title, frame.text) - bottomPadding(i);
       float h = bottomPadding(i) * .8;
       this.chart.draw(getX(), y, getW(), h);
+    } else if(i == this.frames.size() -1){
+      lastFrame = true;
+      float xoffset = frameWidth(i) * 1.2;
+      float w = (getW() - xoffset) * .8, h = getH() * .6;
+      //draw slider
+      setSlider();
+      slider.draw();
+      placeButtons();
+      BubbleExploreFrame f = (BubbleExploreFrame)frame;
+      this.chart.draw(getX() + (getW() + xoffset - w) / 2, getY() + getH() * .15, w, h);
+      int year = (int)slider.getValue() + 1980;
+      if (year == 2018) year = 2017;
+      String[] ps = onPlatforms();
+      this.chart = f.transitionYearPlatforms(this.chart, year, ps);
     } else {
       float xoffset = frameWidth(i) * 1.2;
       float w = (getW() - xoffset) * .8, h = getH() * .6;
       this.chart.draw(getX() + (getW() + xoffset - w) / 2, getY() + getH() * .15, w, h);
     }
   }
+ 
+ private String[] onPlatforms(){
+    ArrayList<String> platforms = new ArrayList<String>();
+    for(Button b : buttons){
+       if(b.buttonOn){
+           platforms.add(b.title);
+       }
+    }
+    String[] p = new String[platforms.size()];
+    int i = 0;
+    for(String s : platforms){
+       p[i] = s;
+       i++;
+    }
+    
+    return p;
+ }
+ 
+ private void placeButtons(){
+   int i = this.frames.size() -1;
+    float yoffset = this.scrolly + this.frames.get(i).snd + topPadding(i) - 100;
+    for(Button b : buttons){
+        b.x = getX();
+        b.y = yoffset;
+        yoffset += 20;
+        b.draw();
+    }
+ }
+ private void setSlider(){
+      int i = this.frames.size() -1;
+      float yoffset = this.scrolly + this.frames.get(i).snd + topPadding(i) - 200;
+      slider.y = yoffset + 50;
+      slider.block.y = yoffset + 50;
+      slider.makeBlock();
+      int yearVal = (int)slider.getValue() + (int)1980;
+      if (yearVal == 2018) yearVal = 2017;
+      textFont(createFont(MAIN_FONT, textSz(i)));
+      fill(0);
+      text("Year: " + yearVal, getX(), slider.y - 25);
+ }
   
   private void drawLegend(int i) {
     float x, y, w, h;

@@ -12,7 +12,7 @@ public class Slider extends ViewPort {
   private int n;
   private float lo, hi; // continuous
   private color bg, fg;
-  private Block block;
+  protected Block block;
   private boolean dragged = false;
   
   // discrete type
@@ -30,7 +30,7 @@ public class Slider extends ViewPort {
     set(dir, SlideType.CONTINUOUS, bg, fg);
   }
   
-  private class Block extends ViewPort {
+  protected class Block extends ViewPort {
     public Block(float x, float y, float w, float h) {
       super(x, y, w, h);
     }
@@ -109,7 +109,7 @@ public class Slider extends ViewPort {
   }
   
   /* general */
-  private void set(SlideDirection dir, SlideType ty, color bg, color fg) {
+  protected void set(SlideDirection dir, SlideType ty, color bg, color fg) {
     this.dir = dir;
     this.ty = ty;
     this.bg = bg;
