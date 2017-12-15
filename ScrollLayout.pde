@@ -156,11 +156,10 @@ public class ScrollLayout extends ViewPort {
  
  private void placeButtons(){
    int i = this.frames.size() -1;
-    float yoffset = this.scrolly + this.frames.get(i).snd + topPadding(i) - 70;
+    float yoffset = this.scrolly + this.frames.get(i).snd + topPadding(i) - 50;
     textFont(createFont(MAIN_FONT, textSz(i)));
-    textSize(20);
     text("Platforms:", getX(), yoffset);
-    yoffset +=40;
+    yoffset +=30;
     int a = 0;
     float x1 = getX();
     float x2 = getX() + 110;
@@ -187,11 +186,11 @@ public class ScrollLayout extends ViewPort {
       if (yearVal == 2018) yearVal = 2017;
       textFont(createFont(MAIN_FONT, textSz(i)));
       fill(0);
-      textSize(20);
+      //textSize(20);
       text("Year: " + yearVal, getX(), slider.y - 25);
-      textSize(10);
-      text("1980", getX(), slider.y + 25);
-      text("2017", getX() + slider.w - 25, slider.y + 25); 
+      //textSize(10);
+      text("1980", getX(), slider.y + 45);
+      text("2017", getX() + slider.w - 25, slider.y + 45); 
  }
   
   private void drawLegend(int i) {
