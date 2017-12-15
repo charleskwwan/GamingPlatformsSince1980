@@ -50,6 +50,10 @@ public class Button {
     color textC = color(0);
      if(buttonOn){
         fill(c1); 
+        if(overButton){
+          fill(c2); 
+          textC = color(#696969);
+        }
      } else {
         fill(c2);
         textC = color(#696969);
